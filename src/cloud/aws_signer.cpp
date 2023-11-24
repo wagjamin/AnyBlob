@@ -1,4 +1,5 @@
 #include "cloud/aws_signer.hpp"
+#include "utils/crypto_utils.hpp"
 #include "utils/utils.hpp"
 #include <algorithm>
 #include <map>
