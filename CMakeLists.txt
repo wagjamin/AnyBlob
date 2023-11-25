@@ -16,7 +16,11 @@ endif (NOT UNIX)
 # ---------------------------------------------------------------------------
 
 find_package(Threads REQUIRED)
-find_package(OpenSSL REQUIRED)
+
+option(ANYBLOB_USE_OPENSSL "Add OpenSSL as a dynamic library to be linked against AnyBlob." ON)
+if (ANYBLOB_USE_OPENSSL)
+    find_package(OpenSSL REQUIRED)
+endif()
 
 # ---------------------------------------------------------------------------
 # Environment
@@ -121,7 +125,11 @@ include("${PROJECT_SOURCE_DIR}/test/integration/local.cmake")
 # ---------------------------------------------------------------------------
 
 add_library(AnyBlob STATIC ${SRC_CPP} ${INCLUDE_HPP})
-target_link_libraries(AnyBlob PUBLIC OpenSSL::SSL Threads::Threads ${LIBURING_LIBRARY} jemalloc)
+target_link_libraries(AnyBlob PUBLIC Threads::Threads ${LIBURING_LIBRARY} jemalloc)
+if (ANYBLOB_USE_OPENSSL)
+    target_link_libraries(AnyBlob PUBLIC OpenSSL::SSL)
+    target_compile_definitions(AnyBlob PRIVATE ANYBLOB_USE_OPENSSL)
+endif()
 target_include_directories(AnyBlob PUBLIC ${PROJECT_SOURCE_DIR}/include)
 if (ANYBLOB_LIBCXX_COMPAT)
     target_compile_definitions(AnyBlob PRIVATE ANYBLOB_LIBCXX_COMPAT)

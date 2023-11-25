@@ -1,3 +1,4 @@
+#ifdef ANYBLOB_USE_OPENSSL 
 #include "utils/crypto_utils.hpp"
 #include "utils/utils.hpp"
 #include <string>
@@ -218,3 +219,4 @@ uint64_t aesEncrypt(const unsigned char* key, const unsigned char* iv, const uin
 //---------------------------------------------------------------------------
 }; // namespace utils
 }; // namespace anyblob
+#endif // ANYBLOB_USE_OPENSSL
