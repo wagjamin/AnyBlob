@@ -2,7 +2,7 @@
 #include <memory>
 #include <array>
 #include <unordered_map>
-#include <openssl/types.h>
+#include <openssl/base.h>
 #include <openssl/ssl.h>
 //---------------------------------------------------------------------------
 // AnyBlob - Universal Cloud Object Storage Library

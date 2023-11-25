@@ -2,12 +2,10 @@
 #include <stdexcept>
 #include <openssl/aes.h>
 #include <openssl/bio.h>
-#include <openssl/core_names.h>
-#include <openssl/encoder.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/hmac.h>
 #include <openssl/md5.h>
-#include <openssl/params.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
@@ -128,37 +126,20 @@ string md5Encode(const uint8_t* data, uint64_t length)
 pair<unique_ptr<uint8_t[]>, uint64_t> hmacSign(const uint8_t* keyData, uint64_t keyLength, const uint8_t* msgData, uint64_t msgLength)
 // Encodes the msg with the key with hmac-sha256
 {
-    auto mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
-    if (!mac)
+    HMAC_CTX hmacctx;
+    HMAC_CTX_init(&hmacctx); 
+
+    auto hash = std::make_unique<uint8_t[]>(SHA256_DIGEST_LENGTH);
+
+    if (HMAC_Init(&hmacctx, keyData, keyLength, EVP_sha256()) <= 0) 
         throw runtime_error("OpenSSL Error!");
 
-    OSSL_PARAM params[4];
-    auto* p = params;
-    string digest = "SHA2-256";
-    *p++ = OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_DIGEST, digest.data(), digest.size());
-    *p = OSSL_PARAM_construct_end();
-
-    auto mctx = EVP_MAC_CTX_new(mac);
-    if (!mctx)
+    if (HMAC_Update(&hmacctx, msgData, msgLength) <= 0) 
         throw runtime_error("OpenSSL Error!");
 
-    if (EVP_MAC_init(mctx, keyData, keyLength, params) <= 0)
+    unsigned int digestLength = SHA256_DIGEST_LENGTH;
+    if (HMAC_Final(&hmacctx, hash.get(), &digestLength) <= 0) 
         throw runtime_error("OpenSSL Error!");
-
-    if (EVP_MAC_update(mctx, msgData, msgLength) <= 0)
-        throw runtime_error("OpenSSL Error!");
-
-    size_t len;
-    if (EVP_MAC_final(mctx, NULL, &len, 0) <= 0)
-        throw runtime_error("OpenSSL Error!");
-
-    auto hash = make_unique<uint8_t[]>(len);
-
-    if (EVP_MAC_final(mctx, hash.get(), &len, len) <= 0)
-        throw runtime_error("OpenSSL len!");
-
-    EVP_MAC_CTX_free(mctx);
-    EVP_MAC_free(mac);
 
     return {move(hash), SHA256_DIGEST_LENGTH};
 }
@@ -212,7 +193,7 @@ uint64_t aesDecrypt(const unsigned char* key, const unsigned char* iv, const uin
         throw runtime_error("OpenSSL Decrypt Error!");
     plainLength = len;
 
-    if (EVP_DecryptFinal(ctx.get(), plainData + len, &len) <= 0)
+    if (EVP_DecryptFinal_ex(ctx.get(), plainData + len, &len) <= 0)
         throw runtime_error("OpenSSL Decrypt Final Error!");
     plainLength += len;
 
@@ -236,7 +217,7 @@ uint64_t aesEncrypt(const unsigned char* key, const unsigned char* iv, const uin
         throw runtime_error("OpenSSL Encrypt Error!");
     encLength = len;
 
-    if (EVP_EncryptFinal(ctx.get(), encData + len, &len) <= 0)
+    if (EVP_EncryptFinal_ex(ctx.get(), encData + len, &len) <= 0)
         throw runtime_error("OpenSSL Encrypt Final Error!");
     encLength += len;
 

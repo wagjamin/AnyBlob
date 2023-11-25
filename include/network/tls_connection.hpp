@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <mutex>
-#include <openssl/types.h>
+#include <openssl/base.h>
 //---------------------------------------------------------------------------
 // AnyBlob - Universal Cloud Object Storage Library
 // Dominik Durner, 2023
