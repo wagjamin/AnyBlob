@@ -193,8 +193,8 @@ void AWS::initResolver(network::TaskedSendReceiver& sendReceiver)
 unique_ptr<utils::DataVector<uint8_t>> AWS::getRequest(const string& filePath, const pair<uint64_t, uint64_t>& range) const
 // Builds the http request for downloading a blob
 {
-    if (!validKeys())
-        return nullptr;
+    // if (!validKeys())
+        // return nullptr;
 
     AWSSigner::Request request;
     request.method = "GET";

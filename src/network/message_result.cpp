@@ -34,6 +34,20 @@ MessageResult::MessageResult(utils::DataVector<uint8_t>* dataVector) : size(), o
     this->dataVector = unique_ptr<utils::DataVector<uint8_t>>(dataVector);
 }
 //---------------------------------------------------------------------------
+MessageResult::MessageResult(MessageResult&& other) {
+    *this = std::move(other);
+}
+//---------------------------------------------------------------------------
+MessageResult& MessageResult::operator=(MessageResult&& other) {
+    dataVector = std::move(other.dataVector);
+    size = other.size;
+    offset = other.offset;
+    originError = other.originError;
+    failureCode = other.failureCode;
+    state = other.state.load();
+    return *this;
+}
+//---------------------------------------------------------------------------
 const string_view MessageResult::getResult() const
 /// Get the result
 {
